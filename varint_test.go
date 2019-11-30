@@ -21,3 +21,16 @@ func TestVarintSize(t *testing.T) {
 		checkVarint(t, x)
 	}
 }
+
+func TestUnderflow(t *testing.T) {
+	i, n, err := FromUvarint([]byte{0x80})
+	if err == nil {
+		t.Error("expected an error")
+	}
+	if n != 0 {
+		t.Error("expected n = 0")
+	}
+	if i != 0 {
+		t.Error("expected i = 0")
+	}
+}
