@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrOverflow   = errors.New("varints larger than uint64 not yet supported")
+	ErrUnderflow  = errors.New("varints malformed, could not reach the end")
 	ErrNotMinimal = errors.New("varint not minimally encoded")
 )
 
@@ -33,6 +34,9 @@ func ToUvarint(num uint64) []byte {
 // varint, and the number of bytes read.
 func FromUvarint(buf []byte) (uint64, int, error) {
 	num, n := binary.Uvarint(buf)
+	if n == 0 {
+		return 0, 0, ErrUnderflow
+	}
 	if n < 0 {
 		return 0, 0, ErrOverflow
 	}
