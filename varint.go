@@ -42,10 +42,10 @@ func FromUvarint(buf []byte) (uint64, int, error) {
 		if b < 0x80 {
 			if i > 9 || i == 9 && b > 1 {
 				return 0, 0, ErrOverflow
+			} else if b == 0 && s > 0 {
+				return 0, 0, ErrNotMinimal
 			}
 			return x | uint64(b)<<s, i + 1, nil
-		} else if b == 0x80 && x == 0 {
-			return 0, 0, ErrNotMinimal
 		}
 		x |= uint64(b&0x7f) << s
 		s += 7
@@ -73,10 +73,12 @@ func ReadUvarint(r io.ByteReader) (uint64, error) {
 		if b < 0x80 {
 			if i > 9 || i == 9 && b > 1 {
 				return 0, ErrOverflow
+			} else if b == 0 && s > 0 {
+				// we should never _finish_ on a 0 byte if we
+				// have more than one byte.
+				return 0, ErrNotMinimal
 			}
 			return x | uint64(b)<<s, nil
-		} else if b == 0x80 && x == 0 {
-			return 0, ErrNotMinimal
 		}
 		x |= uint64(b&0x7f) << s
 		s += 7
