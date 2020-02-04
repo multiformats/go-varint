@@ -1,7 +1,9 @@
 package varint
 
 import (
+	"bytes"
 	"encoding/binary"
+	"io"
 	"testing"
 )
 
@@ -64,5 +66,27 @@ func TestUnderflow(t *testing.T) {
 	}
 	if i != 0 {
 		t.Error("expected i = 0")
+	}
+}
+
+func TestEOF(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	n, err := ReadUvarint(buf)
+	if err != io.EOF {
+		t.Error("expected an EOF")
+	}
+	if n != 0 {
+		t.Error("expected n = 0")
+	}
+}
+
+func TestUnexpectedEOF(t *testing.T) {
+	buf := bytes.NewBuffer([]byte{0x81, 0x81})
+	n, err := ReadUvarint(buf)
+	if err != io.ErrUnexpectedEOF {
+		t.Error("expected an EOF")
+	}
+	if n != 0 {
+		t.Error("expected n = 0")
 	}
 }

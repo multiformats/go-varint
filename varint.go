@@ -61,12 +61,13 @@ func ReadUvarint(r io.ByteReader) (uint64, error) {
 	var s uint
 	for i := 0; ; i++ {
 		b, err := r.ReadByte()
-		switch err {
-		case nil:
-		case io.EOF:
-			// "eof" will look like a success.
-			return 0, io.ErrUnexpectedEOF
-		default:
+		if err != nil {
+			if err == io.EOF && i != 0 {
+				// "eof" will look like a success.
+				// If we've read part of a value, this is not a
+				// success.
+				err = io.ErrUnexpectedEOF
+			}
 			return 0, err
 		}
 		if b < 0x80 {
