@@ -3,6 +3,7 @@ package varint
 import (
 	"encoding/binary"
 	"errors"
+	"io"
 	"math/bits"
 )
 
@@ -33,15 +34,46 @@ func ToUvarint(num uint64) []byte {
 // FromUvarint reads an unsigned varint from the beginning of buf, returns the
 // varint, and the number of bytes read.
 func FromUvarint(buf []byte) (uint64, int, error) {
-	num, n := binary.Uvarint(buf)
-	if n == 0 {
-		return 0, 0, ErrUnderflow
+	var x uint64
+	var s uint
+	for i, b := range buf {
+		if b < 0x80 {
+			if i > 9 || i == 9 && b > 1 {
+				return 0, 0, ErrOverflow
+			}
+			return x | uint64(b)<<s, i + 1, nil
+		} else if b == 0x80 && x == 0 {
+			return 0, 0, ErrNotMinimal
+		}
+		x |= uint64(b&0x7f) << s
+		s += 7
 	}
-	if n < 0 {
-		return 0, 0, ErrOverflow
+	return 0, 0, ErrUnderflow
+}
+
+// ReadUvarint reads a unsigned varint from the given reader.
+func ReadUvarint(r io.ByteReader) (uint64, error) {
+	var x uint64
+	var s uint
+	for i := 0; ; i++ {
+		b, err := r.ReadByte()
+		switch err {
+		case nil:
+		case io.EOF:
+			// "eof" will look like a success.
+			return 0, io.ErrUnexpectedEOF
+		default:
+			return 0, err
+		}
+		if b < 0x80 {
+			if i > 9 || i == 9 && b > 1 {
+				return 0, ErrOverflow
+			}
+			return x | uint64(b)<<s, nil
+		} else if b == 0x80 && x == 0 {
+			return 0, ErrNotMinimal
+		}
+		x |= uint64(b&0x7f) << s
+		s += 7
 	}
-	if n > UvarintSize(num) {
-		return 0, 0, ErrNotMinimal
-	}
-	return num, n, nil
 }

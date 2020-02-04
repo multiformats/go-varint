@@ -22,10 +22,42 @@ func TestVarintSize(t *testing.T) {
 	}
 }
 
-func TestUnderflow(t *testing.T) {
-	i, n, err := FromUvarint([]byte{0x80})
-	if err == nil {
+func TestOverflow(t *testing.T) {
+	i, n, err := FromUvarint(
+		[]byte{
+			0xff, 0xff, 0xff, 0xff,
+			0xff, 0xff, 0xff, 0xff,
+			0xff, 0xff, 0xff, 0x00,
+		},
+	)
+	if err != ErrOverflow {
 		t.Error("expected an error")
+	}
+	if n != 0 {
+		t.Error("expected n = 0")
+	}
+	if i != 0 {
+		t.Error("expected i = 0")
+	}
+}
+
+func TestNotMinimal(t *testing.T) {
+	i, n, err := FromUvarint([]byte{0x80, 0x01})
+	if err != ErrNotMinimal {
+		t.Error("expected an error")
+	}
+	if n != 0 {
+		t.Error("expected n = 0")
+	}
+	if i != 0 {
+		t.Error("expected i = 0")
+	}
+}
+
+func TestUnderflow(t *testing.T) {
+	i, n, err := FromUvarint([]byte{0x81, 0x81})
+	if err != ErrUnderflow {
+		t.Error("expected an underflow")
 	}
 	if n != 0 {
 		t.Error("expected n = 0")
