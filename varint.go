@@ -77,3 +77,11 @@ func ReadUvarint(r io.ByteReader) (uint64, error) {
 		s += 7
 	}
 }
+
+// PutUvarint is an alias for binary.PutUvarint.
+//
+// This is provided for convenience so users of this library can avoid built-in
+// varint functions and easily audit code for uses of those functions.
+func PutUvarint(buf []byte, x uint64) int {
+	return binary.PutUvarint(buf, x)
+}
