@@ -34,6 +34,8 @@ func ToUvarint(num uint64) []byte {
 // FromUvarint reads an unsigned varint from the beginning of buf, returns the
 // varint, and the number of bytes read.
 func FromUvarint(buf []byte) (uint64, int, error) {
+	// Modified from the go standard library. Copyright the Go Authors and
+	// released under the BSD License.
 	var x uint64
 	var s uint
 	for i, b := range buf {
@@ -53,6 +55,8 @@ func FromUvarint(buf []byte) (uint64, int, error) {
 
 // ReadUvarint reads a unsigned varint from the given reader.
 func ReadUvarint(r io.ByteReader) (uint64, error) {
+	// Modified from the go standard library. Copyright the Go Authors and
+	// released under the BSD License.
 	var x uint64
 	var s uint
 	for i := 0; ; i++ {
