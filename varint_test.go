@@ -34,6 +34,35 @@ func TestVarintSize(t *testing.T) {
 	}
 }
 
+func TestOverflow_9thSignalsMore(t *testing.T) {
+	buf := bytes.NewBuffer([]byte{
+		0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff,
+		0x80,
+	})
+
+	_, err := ReadUvarint(buf)
+	if err != ErrOverflow {
+		t.Fatalf("expected ErrOverflow, got: %s", err)
+	}
+}
+
+func TestOverflow_ReadBuffer(t *testing.T) {
+	buf := bytes.NewBuffer([]byte{
+		0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff,
+		0xff, 0xff, 0xff, 0xff,
+	})
+
+	_, err := ReadUvarint(buf)
+	if err != ErrOverflow {
+		t.Fatalf("expected ErrOverflow, got: %s", err)
+	}
+}
+
 func TestOverflow(t *testing.T) {
 	i, n, err := FromUvarint(
 		[]byte{
