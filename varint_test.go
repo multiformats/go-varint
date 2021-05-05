@@ -117,6 +117,9 @@ func TestNotMinimalRead(t *testing.T) {
 	if i != 1 {
 		t.Error("expected varint 1")
 	}
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestUnderflow(t *testing.T) {
