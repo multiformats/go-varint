@@ -156,3 +156,28 @@ func TestUnexpectedEOF(t *testing.T) {
 		t.Error("expected n = 0")
 	}
 }
+
+func BenchmarkReadUvarint(t *testing.B) {
+	var expected uint64 = 0xffff12
+	reader := bytes.NewReader(ToUvarint(expected))
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		result, _ := ReadUvarint(reader)
+		if result != expected {
+			t.Fatal("invalid result")
+		}
+		reader.Seek(0, 0)
+	}
+}
+
+func BenchmarkFromUvarint(t *testing.B) {
+	var expected uint64 = 0xffff12
+	uvarint := ToUvarint(expected)
+	t.ResetTimer()
+	for i := 0; i < t.N; i++ {
+		result, _, _ := FromUvarint(uvarint)
+		if result != expected {
+			t.Fatal("invalid result")
+		}
+	}
+}
