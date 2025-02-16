@@ -1,3 +1,3 @@
 module github.com/multiformats/go-varint
 
-go 1.22
+go 1.23
